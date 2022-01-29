@@ -39,7 +39,7 @@ class Task2state extends State<Task2> {
                           border: Border.all(color: Colors.blue),
                         ),
                         // color: Colors.red,
-                        child: Text('   bbbn '),
+                        child: Text('   bbbn ffff '),
                       ),
                     ],
                   )
