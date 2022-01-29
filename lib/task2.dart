@@ -20,11 +20,12 @@ class Task2state extends State<Task2> {
   }
 
   Widget _drawerfuntion() {
-    var n = 4;
+    var n = 8;
     Widget sqr;
     sqr = Column(
       children: <Widget>[
-        for (var j = 0; j < n / 2; j++)
+        // ignore: unrelated_type_equality_checks
+        for (int j = 0; j < (n / 2) != 3; j++)
           Center(
             child: Row(
               children: [
