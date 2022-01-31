@@ -57,7 +57,7 @@ class Task3state extends State<Task3> {
   void onChanged(int index, bool? value) {
     if (value == true) {
       names[index] = value!;
-      fav.add(items[index]);
+      fav.add(_addtofav(index));
       items.removeAt(index);
     } else {
       names[index] = value!;
@@ -80,5 +80,14 @@ class Task3state extends State<Task3> {
         ),
       );
     }
+  }
+
+  Widget _addtofav(int i) {
+    return CheckboxListTile(
+      title: Text('name $i'),
+      subtitle: Text('description'),
+      value: false,
+      onChanged: (value) => onChanged(i, value),
+    );
   }
 }
