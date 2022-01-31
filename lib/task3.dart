@@ -87,7 +87,7 @@ class Task3state extends State<Task3> {
       title: Text('name $i'),
       subtitle: Text('description'),
       value: false,
-      onChanged: (value) => onChanged(i, value),
+      onChanged: (value) => onChanged,
     );
   }
 }
