@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/task4%20todo.dart';
-import 'package:flutter_application_1/task4.dart';
-import 'task1.dart';
-import 'task2.dart';
-import 'task3.dart';
+
 
 void main() {
   runApp(const MyApp());

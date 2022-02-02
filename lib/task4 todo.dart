@@ -15,6 +15,7 @@ Future<Todo> gettodo() async {
   Response response = await jsonPlaceHolder.gettodo(1);
   if (response.statusCode == 200) {
     body = response.body;
+    print(body);
     Map<String, dynamic> map = jsonDecode(body);
     return Todo.fromjson(map);
   } else {
@@ -88,7 +89,7 @@ class Task4todostate extends State<Task4todo> {
                   Todo mytodo = snapshot.data!;
                   return CheckboxListTile(
                     title: Padding(
-                      padding: const EdgeInsets.all(8.0),
+                      padding: const EdgeInsets.all(14.0),
                       child: Text(mytodo.title),
                     ),
                     onChanged: (bool? value) {},
