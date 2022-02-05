@@ -92,7 +92,10 @@ class Task4todostate extends State<Task4todo> {
                       padding: const EdgeInsets.all(14.0),
                       child: Text(mytodo.title),
                     ),
-                    onChanged: (bool? value) {},
+                    onChanged: (bool? value) {
+                      mytodo.completed = value!;
+                      setState(() {});
+                    },
                     value: mytodo.completed,
                   );
                 } else {
