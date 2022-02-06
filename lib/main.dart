@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/task3.dart';
 import 'package:flutter_application_1/task4%20todo.dart';
 import 'package:flutter_application_1/task5.dart';
+import 'package:flutter_application_1/task6.dart';
 
 void main() {
   runApp(const MyApp());
@@ -28,7 +29,7 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.green,
       ),
-      home: const Task5(),
+      home: const Blog(),
     );
   }
 }
