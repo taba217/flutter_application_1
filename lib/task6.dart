@@ -15,16 +15,17 @@ class Blogstate extends State<Blog> {
   final TextEditingController _controller = TextEditingController();
   final TextEditingController _controller1 = TextEditingController();
   Future<Post>? _futurePost;
-
+  late Service service;
   @override
   void initState() {
-    Service service = Service();
+    service = Service();
     _futurePost = service.getPost(12);
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
+    var _futurePosts;
     return MaterialApp(
       title: 'Blog Example',
       theme: ThemeData(
@@ -37,9 +38,9 @@ class Blogstate extends State<Blog> {
         body: Container(
           alignment: Alignment.center,
           padding: const EdgeInsets.all(8.0),
-          child: FutureBuilder<Post>(
-            builder: (context, snapshot) => _buildWidget(context, snapshot),
-            future: _futurePost,
+          child: FutureBuilder<List<Post>>(
+            builder: (context, snapshot) => _buildWidget1(context, snapshot),
+            future: service.getPosts(),
           ),
           // (_futurePost == null) ? buildColumn() : buildFutureBuilder(),
         ),
@@ -97,6 +98,22 @@ Widget _buildWidget(context, snapshot) {
     if (snapshot.hasData) {
       Post post = snapshot.data!;
       return Text(post.title);
+    } else {
+      return Text(snapshot.error.toString());
+    }
+  }
+  return const CircularProgressIndicator();
+}
+
+Widget _buildWidget1(context, AsyncSnapshot<List<Post>> snapshot) {
+  if (snapshot.connectionState == ConnectionState.done) {
+    if (snapshot.hasData) {
+      List<Post> posts = snapshot.data!;
+      return ListView.builder(
+          itemCount: posts.length,
+          itemBuilder: (context, index) {
+            return Text(posts[index].title);
+          });
     } else {
       return Text(snapshot.error.toString());
     }
