@@ -16,11 +16,17 @@ class Updateformstate extends State<Updateform> {
   late Future<Post> _futurePost;
   late Post post;
   late Map arguments;
+
   @override
   void initState() {
     service = Service();
-    _futurePost = service.getPost(1);
-    arguments = ModalRoute.of(context)!.settings.arguments as Map;
+    Future.delayed(Duration.zero, () {
+      setState(() {
+        arguments = ModalRoute.of(context)!.settings.arguments as Map;
+      });
+      _futurePost = service.getPost(arguments['postid']);
+    });
+
     super.initState();
   }
 
@@ -35,8 +41,8 @@ class Updateformstate extends State<Updateform> {
   }
 
   Widget _formOptions(int i) {
-    TextEditingController _controller = new TextEditingController();
-    TextEditingController _controller1 = new TextEditingController();
+    TextEditingController _controller = TextEditingController();
+    TextEditingController _controller1 = TextEditingController();
     switch (i) {
       case 1:
         return FutureBuilder<Post>(
@@ -113,12 +119,14 @@ class Updateformstate extends State<Updateform> {
                                 onPressed: () {
                                   setState(() {
                                     _futurePost = service.updatePost(
-                                        1, _controller.text, _controller1.text);
+                                        arguments['postid'],
+                                        _controller.text,
+                                        _controller1.text);
                                     // print(
                                     //     '$post.id, $_controller.text$_controller1.text');
                                   });
                                 },
-                                child: const Text('Create Data'),
+                                child: const Text('Update Data'),
                               ),
                             ),
                           ],
@@ -134,7 +142,41 @@ class Updateformstate extends State<Updateform> {
           },
         );
       case 2:
-        return Container();
+        return Container(
+          margin: EdgeInsets.all(8),
+          padding: EdgeInsets.all(12),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TextField(
+                  controller: _controller,
+                  decoration: const InputDecoration(hintText: 'Enter Title'),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TextField(
+                  controller: _controller1,
+                  decoration: const InputDecoration(hintText: 'Enter Body'),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      _futurePost = service.createPost(
+                          _controller.text, _controller1.text);
+                    });
+                  },
+                  child: const Text('Create Data'),
+                ),
+              ),
+            ],
+          ),
+        );
+
       default:
         return CircularProgressIndicator();
     }

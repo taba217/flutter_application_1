@@ -22,7 +22,7 @@ class Blogstate extends State<Blog> {
   @override
   void initState() {
     service = Service();
-    _futurePost = service.getPost(12);
+
     super.initState();
   }
 
@@ -48,7 +48,7 @@ class Blogstate extends State<Blog> {
           // (_futurePost == null) ? buildColumn() : buildFutureBuilder(),
         ),
         floatingActionButton: FloatingActionButton(
-          child: Icon(Icons.plus_one),
+          child: const Icon(Icons.add),
           onPressed: () {
             Navigator.push(
                 context,
@@ -168,7 +168,11 @@ Widget _buildWidget1(context, AsyncSnapshot<List<Post>> snapshot) {
                                         context,
                                         MaterialPageRoute(
                                             settings: RouteSettings(
-                                              arguments: {'formid': value},
+                                              arguments: {
+                                                'formid': value,
+                                                'postid':
+                                                    snapshot.data![index].id
+                                              },
                                             ),
                                             builder: (context) =>
                                                 const updateform.Updateform())),
