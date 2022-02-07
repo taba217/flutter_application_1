@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter_application_1/task6%20form.dart' as updateform;
 import 'package:http/http.dart';
 import 'package:flutter/material.dart';
 
@@ -11,11 +12,13 @@ class Blog extends StatefulWidget {
   State<StatefulWidget> createState() => Blogstate();
 }
 
+late Service service;
+
 class Blogstate extends State<Blog> {
   final TextEditingController _controller = TextEditingController();
   final TextEditingController _controller1 = TextEditingController();
   Future<Post>? _futurePost;
-  late Service service;
+
   @override
   void initState() {
     service = Service();
@@ -43,6 +46,18 @@ class Blogstate extends State<Blog> {
             future: service.getPosts(),
           ),
           // (_futurePost == null) ? buildColumn() : buildFutureBuilder(),
+        ),
+        floatingActionButton: FloatingActionButton(
+          child: Icon(Icons.plus_one),
+          onPressed: () {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    settings: const RouteSettings(
+                      arguments: {'formid': 2},
+                    ),
+                    builder: (context) => const updateform.Updateform()));
+          },
         ),
       ),
     );
@@ -111,8 +126,63 @@ Widget _buildWidget1(context, AsyncSnapshot<List<Post>> snapshot) {
       List<Post> posts = snapshot.data!;
       return ListView.builder(
           itemCount: posts.length,
+          clipBehavior: Clip.hardEdge,
+          controller: ScrollController(),
           itemBuilder: (context, index) {
-            return Text(posts[index].title);
+            return Padding(
+              padding: EdgeInsets.all(8.0),
+              child: Column(
+                children: [
+                  Container(
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(14)),
+                      child: Card(
+                          child: Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(12.0),
+                          child: ListTile(
+                            title: Text(
+                              posts[index].title,
+                              style: Theme.of(context).textTheme.bodyLarge,
+                            ),
+                            subtitle: Text(
+                              posts[index].body,
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                            dense: true,
+                            trailing: PopupMenuButton(
+                              itemBuilder: (context) => [
+                                const PopupMenuItem(
+                                  child: Text("Update"),
+                                  value: 1,
+                                ),
+                                const PopupMenuItem(
+                                  child: Text("delete"),
+                                  value: 2,
+                                )
+                              ],
+                              onSelected: (value) => {
+                                if (value == 1)
+                                  {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            settings: RouteSettings(
+                                              arguments: {'formid': value},
+                                            ),
+                                            builder: (context) =>
+                                                const updateform.Updateform())),
+                                  }
+                                else
+                                  {service}
+                              },
+                            ),
+                          ),
+                        ),
+                      ))),
+                ],
+              ),
+            );
           });
     } else {
       return Text(snapshot.error.toString());
@@ -121,10 +191,12 @@ Widget _buildWidget1(context, AsyncSnapshot<List<Post>> snapshot) {
   return const CircularProgressIndicator();
 }
 
+late Map<String, String> _headers;
+
 abstract class Api {
   Future<Post> getPost(int id);
   Future<Post> createPost(String title, String body);
-  Future<Post> updatePost(String title, String body);
+  Future<Post> updatePost(int id, String title, String body);
   Future<Post> deletePost(int id);
   Future<List<Post>> getPosts();
 }
@@ -132,6 +204,9 @@ abstract class Api {
 class Service implements Api {
   final String _url = 'https://jsonplaceholder.typicode.com/posts/';
   String _path = 'posts/';
+  final _headers = <String, String>{
+    'Content-Type': 'application/json; charset=UTF-8'
+  };
   @override
   Future<Post> getPost(int id) async {
     Response response = await get(Uri.parse('$_url$id'));
@@ -146,9 +221,7 @@ class Service implements Api {
   Future<Post> createPost(String title, String body) async {
     final response = await post(
       Uri.parse('$_url'),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
+      headers: _headers,
       body: jsonEncode(<String, String>{
         'title': title,
         'body': body,
@@ -181,9 +254,21 @@ class Service implements Api {
   }
 
   @override
-  Future<Post> updatePost(String title, String body) {
-    // TODO: implement updatePost
-    throw UnimplementedError();
+  Future<Post> updatePost(int id, String title, String body) async {
+    Response response = await put(
+      Uri.parse('$_url$id'),
+      headers: _headers,
+      body: jsonEncode(<String, String>{
+        'title': title,
+        'body': body,
+      }),
+    );
+    if (response.statusCode == 200) {
+      String body = response.body;
+      return Post.fromJson(jsonDecode(body));
+    } else {
+      throw ("Error retrieving posts");
+    }
   }
 }
 
