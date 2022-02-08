@@ -22,7 +22,6 @@ class Blogstate extends State<Blog> {
   @override
   void initState() {
     service = Service();
-
     super.initState();
   }
 
@@ -106,93 +105,101 @@ class Blogstate extends State<Blog> {
       ],
     );
   }
-}
 
-Widget _buildWidget(context, snapshot) {
-  if (snapshot.connectionState == ConnectionState.done) {
-    if (snapshot.hasData) {
-      Post post = snapshot.data!;
-      return Text(post.title);
-    } else {
-      return Text(snapshot.error.toString());
+  Widget _buildWidget(context, snapshot) {
+    if (snapshot.connectionState == ConnectionState.done) {
+      if (snapshot.hasData) {
+        Post post = snapshot.data!;
+        return Text(post.title);
+      } else {
+        return Text(snapshot.error.toString());
+      }
     }
+    return const CircularProgressIndicator();
   }
-  return const CircularProgressIndicator();
-}
 
-Widget _buildWidget1(context, AsyncSnapshot<List<Post>> snapshot) {
-  if (snapshot.connectionState == ConnectionState.done) {
-    if (snapshot.hasData) {
-      List<Post> posts = snapshot.data!;
-      return ListView.builder(
-          itemCount: posts.length,
-          clipBehavior: Clip.hardEdge,
-          controller: ScrollController(),
-          itemBuilder: (context, index) {
-            return Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Column(
-                children: [
-                  Container(
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(14)),
-                      child: Card(
-                          child: Center(
-                        child: Padding(
-                          padding: EdgeInsets.all(12.0),
-                          child: ListTile(
-                            title: Text(
-                              posts[index].title,
-                              style: Theme.of(context).textTheme.bodyLarge,
-                            ),
-                            subtitle: Text(
-                              posts[index].body,
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
-                            dense: true,
-                            trailing: PopupMenuButton(
-                              itemBuilder: (context) => [
-                                const PopupMenuItem(
-                                  child: Text("Update"),
-                                  value: 1,
-                                ),
-                                const PopupMenuItem(
-                                  child: Text("delete"),
-                                  value: 2,
-                                )
-                              ],
-                              onSelected: (value) => {
-                                if (value == 1)
-                                  {
-                                    Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            settings: RouteSettings(
-                                              arguments: {
-                                                'formid': value,
-                                                'postid':
-                                                    snapshot.data![index].id
-                                              },
-                                            ),
-                                            builder: (context) =>
-                                                const updateform.Updateform())),
-                                  }
-                                else
-                                  {service}
-                              },
+  Widget _buildWidget1(context, AsyncSnapshot<List<Post>> snapshot) {
+    if (snapshot.connectionState == ConnectionState.done) {
+      if (snapshot.hasData) {
+        List<Post> posts = snapshot.data!;
+        return ListView.builder(
+            itemCount: posts.length,
+            clipBehavior: Clip.hardEdge,
+            controller: ScrollController(),
+            itemBuilder: (context, index) {
+              return Padding(
+                padding: EdgeInsets.all(8.0),
+                child: Column(
+                  children: [
+                    Container(
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(14)),
+                        child: Card(
+                            child: Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(12.0),
+                            child: ListTile(
+                              title: Text(
+                                posts[index].title,
+                                style: Theme.of(context).textTheme.bodyLarge,
+                              ),
+                              subtitle: Text(
+                                posts[index].body,
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                              dense: true,
+                              trailing: PopupMenuButton(
+                                itemBuilder: (context) => [
+                                  const PopupMenuItem(
+                                    child: Text("Update"),
+                                    value: 1,
+                                  ),
+                                  const PopupMenuItem(
+                                    child: Text("delete"),
+                                    value: 2,
+                                  )
+                                ],
+                                onSelected: (value) => {
+                                  if (value == 1)
+                                    {
+                                      Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              settings: RouteSettings(
+                                                arguments: {
+                                                  'formid': value,
+                                                  'postid':
+                                                      snapshot.data![index].id
+                                                },
+                                              ),
+                                              builder: (context) =>
+                                                  const updateform
+                                                      .Updateform())),
+                                    }
+                                  else
+                                    {
+                                      setState(
+                                        () {
+                                          posts.removeAt(index);
+                                          service.deletePost(index);
+                                        },
+                                      )
+                                    }
+                                },
+                              ),
                             ),
                           ),
-                        ),
-                      ))),
-                ],
-              ),
-            );
-          });
-    } else {
-      return Text(snapshot.error.toString());
+                        ))),
+                  ],
+                ),
+              );
+            });
+      } else {
+        return Text(snapshot.error.toString());
+      }
     }
+    return const CircularProgressIndicator();
   }
-  return const CircularProgressIndicator();
 }
 
 late Map<String, String> _headers;
@@ -201,7 +208,7 @@ abstract class Api {
   Future<Post> getPost(int id);
   Future<Post> createPost(String title, String body);
   Future<Post> updatePost(int id, String title, String body);
-  Future<Post> deletePost(int id);
+  Future<String> deletePost(int id);
   Future<List<Post>> getPosts();
 }
 
@@ -240,9 +247,13 @@ class Service implements Api {
   }
 
   @override
-  Future<Post> deletePost(int id) {
-    // TODO: implement deletePost
-    throw UnimplementedError();
+  Future<String> deletePost(int id) async {
+    Response response = await delete(Uri.parse('$_url$id'));
+    if (response.statusCode == 200) {
+      return response.body.toString();
+    } else {
+      throw Exception('error');
+    }
   }
 
   @override

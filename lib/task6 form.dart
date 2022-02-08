@@ -9,17 +9,21 @@ class Updateform extends StatefulWidget {
   State<StatefulWidget> createState() => Updateformstate();
 }
 
+TextEditingController _controller = TextEditingController();
+TextEditingController _controller1 = TextEditingController();
 late Service service;
 late Post post;
 
 class Updateformstate extends State<Updateform> {
-  late Future<Post> _futurePost;
+  Future<Post>? _futurePost;
+  //  Future<Post>? _futurePost;
   late Post post;
   late Map arguments;
 
   @override
   void initState() {
     service = Service();
+
     Future.delayed(Duration.zero, () {
       setState(() {
         arguments = ModalRoute.of(context)!.settings.arguments as Map;
@@ -34,15 +38,13 @@ class Updateformstate extends State<Updateform> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Update Form'),
+        title: Text('Form'),
       ),
       body: Center(child: _formOptions(arguments['formid'])),
     );
   }
 
   Widget _formOptions(int i) {
-    TextEditingController _controller = TextEditingController();
-    TextEditingController _controller1 = TextEditingController();
     switch (i) {
       case 1:
         return FutureBuilder<Post>(
@@ -142,43 +144,71 @@ class Updateformstate extends State<Updateform> {
           },
         );
       case 2:
-        return Container(
-          margin: EdgeInsets.all(8),
-          padding: EdgeInsets.all(12),
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: TextField(
-                  controller: _controller,
-                  decoration: const InputDecoration(hintText: 'Enter Title'),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: TextField(
-                  controller: _controller1,
-                  decoration: const InputDecoration(hintText: 'Enter Body'),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      _futurePost = service.createPost(
-                          _controller.text, _controller1.text);
-                    });
-                  },
-                  child: const Text('Create Data'),
-                ),
-              ),
-            ],
-          ),
-        );
+        return (_futurePost == null) ? Buildform() : buildfuture();
 
       default:
         return CircularProgressIndicator();
     }
+  }
+
+  Widget buildfuture() {
+    return FutureBuilder<Post>(
+        builder: (context, AsyncSnapshot<Post> snapshot) {
+          if (snapshot.connectionState == ConnectionState.done) {
+            if (snapshot.hasData) {
+              post = snapshot.data!;
+              return Center(
+                child: Column(
+                  children: [
+                    Text(post.id.toString()),
+                    Text(post.title),
+                    Text(post.body),
+                  ],
+                ),
+              );
+            }
+          } else {
+            return Text(snapshot.error.toString());
+          }
+          return CircularProgressIndicator();
+        },
+        future: _futurePost);
+  }
+
+  Widget Buildform() {
+    return Container(
+      margin: EdgeInsets.all(8),
+      padding: EdgeInsets.all(12),
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              controller: _controller,
+              decoration: const InputDecoration(hintText: 'Enter Title'),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              controller: _controller1,
+              decoration: const InputDecoration(hintText: 'Enter Body'),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  _futurePost =
+                      service.createPost(_controller.text, _controller1.text);
+                });
+              },
+              child: const Text('Create Data'),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

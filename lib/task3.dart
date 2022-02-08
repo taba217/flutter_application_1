@@ -51,7 +51,7 @@ class Task3state extends State<Task3> {
             children: items,
           );
         });
-    return widget!;
+    return widget;
   }
 
   void onChanged(int index, bool? value) {
