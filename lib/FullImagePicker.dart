@@ -50,6 +50,9 @@ class _MyHomePageState extends State<MyHomePage> {
   final TextEditingController qualityController = TextEditingController();
 
   Future<void> _playVideo(XFile? file) async {
+       final XFile? file = await _picker.pickVideo(
+          source: source, maxDuration: const Duration(seconds: 10));
+      await _playVideo(file);
     if (file != null && mounted) {
       await _disposeVideoController();
       late VideoPlayerController controller;

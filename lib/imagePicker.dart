@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:html';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -18,20 +17,19 @@ class imageEx extends StatefulWidget {
 }
 
 late Service service;
+Future<User>? _future;
+
+String? _pickImageError;
+
+XFile? _imageFile;
+XFile? _backImage;
+VideoPlayerController? _controller;
+VideoPlayerController? _toBeDisposed;
+String? _retrieveDataError;
+bool isitback = false;
 
 class imageExstate extends State<imageEx> {
-  final TextEditingController _controller = TextEditingController();
-
-  Future<User>? _future;
-
-  String? _pickImageError;
-
-  XFile? _imageFile;
-  XFile? _backImage;
-  VideoPlayerController? _controller;
-  VideoPlayerController? _toBeDisposed;
-  String? _retrieveDataError;
-  bool isitback = false;
+  var type = false;
 
   @override
   void initState() {
@@ -172,13 +170,24 @@ class imageExstate extends State<imageEx> {
                               children: [
                                 Padding(
                                   padding: EdgeInsets.all(12.0),
-                                  child: Container(
-                                    margin: EdgeInsets.all(10),
-                                    child: Text(
-                                      'Videos',
-                                      style:
-                                          Theme.of(context).textTheme.bodyLarge,
-                                    ),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        margin: EdgeInsets.all(10),
+                                        child: Text(
+                                          'Videos',
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodyLarge,
+                                        ),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          _addimages();
+                                        },
+                                        child: Text('add'),
+                                      )
+                                    ],
                                   ),
                                 ),
                                 Center(
@@ -188,11 +197,14 @@ class imageExstate extends State<imageEx> {
                                         ? GridView.builder(
                                             // scrollDirection: Axis.horizontal,
                                             shrinkWrap: true,
-                                            itemCount: 12,
+                                            itemCount: _imageFileList == null
+                                                ? _imageFileList!.length
+                                                : 1,
                                             itemBuilder: (context, index) {
                                               return Container(
                                                 child: Image.network(
-                                                    _imageFile!.path),
+                                                    _imageFileList![index]
+                                                        .path),
                                               );
                                             },
 
@@ -234,9 +246,21 @@ class imageExstate extends State<imageEx> {
     );
   }
 
+  void _addimages() async {
+    try {
+      final pickedFileList = await _picker!.pickMultiImage();
+      setState(() {
+        _imageFileList = pickedFileList;
+        print(_imageFileList!.length);
+      });
+    } catch (e) {
+      print(_pickImageError);
+    }
+  }
+
   void addVideos() async {
     final XFile? file = await _picker!.pickVideo(
-        source: ImageSource.gallery, maxDuration: const Duration(seconds: 10));
+        source: ImageSource.gallery, maxDuration: const Duration(seconds: 50));
     await _playVideo(file);
   }
 
@@ -247,10 +271,9 @@ class imageExstate extends State<imageEx> {
       if (kIsWeb) {
         controller = VideoPlayerController.network(file.path);
       } else {
-        controller = VideoPlayerController.file(File(file.path));
+        // controller = VideoPlayerController.file(File(file.path));
       }
       _controller = controller;
-
       final double volume = kIsWeb ? 0.0 : 1.0;
       await controller.setVolume(volume);
       await controller.initialize();
@@ -266,15 +289,6 @@ class imageExstate extends State<imageEx> {
     }
     _toBeDisposed = _controller;
     _controller = null;
-  }
-
-  Text? _getRetrieveErrorWidget() {
-    if (_retrieveDataError != null) {
-      final Text result = Text(_retrieveDataError!);
-      _retrieveDataError = null;
-      return result;
-    }
-    return null;
   }
 
   Widget _previewVideo() {
@@ -294,36 +308,37 @@ class imageExstate extends State<imageEx> {
     );
   }
 
-  void _showDialog() {
+  void _showDialog(bool type) {
     showDialog(
         context: context,
         routeSettings: RouteSettings(),
         builder: (context) {
           return AlertDialog(
-            title: Text('Add optional parameters'),
+            title: Text(''),
             content: Column(
               children: <Widget>[
-                TextField(
-                  controller: _controller,
-                  keyboardType: TextInputType.numberWithOptions(decimal: true),
-                  decoration:
-                      InputDecoration(hintText: "Enter maxWidth if desired"),
-                ),
+                type ? _previewVideo() : _previewImage(),
+                // TextField(
+                //   controller: _controller,
+                //   keyboardType: TextInputType.numberWithOptions(decimal: true),
+                //   decoration:
+                //       InputDecoration(hintText: "Enter maxWidth if desired"),
+                // ),
               ],
             ),
             actions: [
-              TextButton(
-                child: const Text('CANCEL'),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-              TextButton(
-                child: const Text('OK'),
-                onPressed: () {
-                  _pickImage(ImageSource.gallery);
-                },
-              ),
+              // TextButton(
+              //   child: const Text('CANCEL'),
+              //   onPressed: () {
+              //     Navigator.of(context).pop();
+              //   },
+              // ),
+              // TextButton(
+              //   child: const Text('OK'),
+              //   onPressed: () {
+              //     _pickImage(ImageSource.gallery);
+              //   },
+              // ),
             ],
           );
         });
@@ -367,20 +382,111 @@ class imageExstate extends State<imageEx> {
           margin: EdgeInsets.all(50.0),
           decoration: BoxDecoration(
               border: Border.all(
-                width: 4,
                 color: Colors.black,
               ),
               shape: BoxShape.circle),
           child: Semantics(
             label: 'image_picker_example_picked_image',
-            child: _imageFile == null
-                ? Text('image place')
-                : Image.network(_imageFile!.path),
+            child:
+                _imageFile == null ? Text('') : Image.network(_imageFile!.path),
             // : Image.file(File(_imageFileList![index].path)),
           ),
         ),
       ),
     );
+  }
+}
+
+List<XFile>? _imageFileList;
+Text? _getRetrieveErrorWidget() {
+  if (_retrieveDataError != null) {
+    final Text result = Text(_retrieveDataError!);
+    _retrieveDataError = null;
+    return result;
+  }
+  return null;
+}
+
+Widget _previewImage() {
+  final Text? retrieveError = _getRetrieveErrorWidget();
+  if (retrieveError != null) {
+    return retrieveError;
+  }
+  if (_imageFileList != null) {
+    return Semantics(
+        child: ListView.builder(
+          key: UniqueKey(),
+          itemBuilder: (context, index) {
+            return Semantics(
+              label: 'image_picker_example_picked_image',
+              child: kIsWeb
+                  ? Image.network(_imageFileList![index].path)
+                  : Text(''), // Image.file(File(_imageFileList![index].path)),
+            );
+          },
+          itemCount: _imageFileList!.length,
+        ),
+        label: 'image_picker_example_picked_images');
+  } else if (_pickImageError != null) {
+    return Text(
+      'Pick image error: $_pickImageError',
+      textAlign: TextAlign.center,
+    );
+  } else {
+    return const Text(
+      'You have not yet picked an image.',
+      textAlign: TextAlign.center,
+    );
+  }
+}
+
+class AspectRatioVideo extends StatefulWidget {
+  AspectRatioVideo(this.controller);
+
+  final VideoPlayerController? controller;
+
+  @override
+  AspectRatioVideoState createState() => AspectRatioVideoState();
+}
+
+class AspectRatioVideoState extends State<AspectRatioVideo> {
+  VideoPlayerController? get controller => widget.controller;
+  bool initialized = false;
+
+  void _onVideoControllerUpdate() {
+    if (!mounted) {
+      return;
+    }
+    if (initialized != controller!.value.isInitialized) {
+      initialized = controller!.value.isInitialized;
+      setState(() {});
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    controller!.addListener(_onVideoControllerUpdate);
+  }
+
+  @override
+  void dispose() {
+    controller!.removeListener(_onVideoControllerUpdate);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (initialized) {
+      return Center(
+        child: AspectRatio(
+          aspectRatio: controller!.value.aspectRatio,
+          child: VideoPlayer(controller!),
+        ),
+      );
+    } else {
+      return Container();
+    }
   }
 }
 
