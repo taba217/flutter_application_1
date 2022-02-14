@@ -137,14 +137,18 @@ class imageExstate extends State<imageEx> {
                                         ? GridView.builder(
                                             // scrollDirection: Axis.horizontal,
                                             shrinkWrap: true,
-                                            itemCount: 12,
+                                            itemCount: _imageFileList != null
+                                                ? _imageFileList!.length
+                                                : 1,
                                             itemBuilder: (context, index) {
                                               return Container(
-                                                child: Image.network(
-                                                    _imageFile!.path),
+                                                child: _imageFileList != null
+                                                    ? Image.network(
+                                                        _imageFileList![index]
+                                                            .path)
+                                                    : Text(''),
                                               );
                                             },
-
                                             gridDelegate:
                                                 const SliverGridDelegateWithFixedCrossAxisCount(
                                               crossAxisCount: 3,
@@ -197,7 +201,7 @@ class imageExstate extends State<imageEx> {
                                         ? GridView.builder(
                                             // scrollDirection: Axis.horizontal,
                                             shrinkWrap: true,
-                                            itemCount: _imageFileList == null
+                                            itemCount: _imageFileList != null
                                                 ? _imageFileList!.length
                                                 : 1,
                                             itemBuilder: (context, index) {
