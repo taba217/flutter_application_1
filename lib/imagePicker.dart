@@ -121,19 +121,30 @@ class imageExstate extends State<imageEx> {
                               children: [
                                 Padding(
                                   padding: EdgeInsets.all(12.0),
-                                  child: Container(
-                                    margin: EdgeInsets.all(10),
-                                    child: Text(
-                                      'Images',
-                                      style:
-                                          Theme.of(context).textTheme.bodyLarge,
-                                    ),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        margin: EdgeInsets.all(10),
+                                        child: Text(
+                                          'Images',
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodyLarge,
+                                        ),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          _addimages();
+                                        },
+                                        child: Text('add'),
+                                      )
+                                    ],
                                   ),
                                 ),
                                 Center(
                                   child: Container(
                                     margin: EdgeInsets.all(8),
-                                    child: _imageFile != null
+                                    child: _imageFileList != null
                                         ? GridView.builder(
                                             // scrollDirection: Axis.horizontal,
                                             shrinkWrap: true,
@@ -187,7 +198,7 @@ class imageExstate extends State<imageEx> {
                                       ),
                                       TextButton(
                                         onPressed: () {
-                                          _addimages();
+                                          addVideos();
                                         },
                                         child: Text('add'),
                                       )
@@ -197,21 +208,20 @@ class imageExstate extends State<imageEx> {
                                 Center(
                                   child: Container(
                                     margin: EdgeInsets.all(8),
-                                    child: _imageFile != null
+                                    child: _videoFileList != null
                                         ? GridView.builder(
                                             // scrollDirection: Axis.horizontal,
                                             shrinkWrap: true,
-                                            itemCount: _imageFileList != null
-                                                ? _imageFileList!.length
+                                            itemCount: _videoFileList != null
+                                                ? _videoFileList!.length
                                                 : 1,
                                             itemBuilder: (context, index) {
                                               return Container(
                                                 child: Image.network(
-                                                    _imageFileList![index]
+                                                    _videoFileList![index]
                                                         .path),
                                               );
                                             },
-
                                             gridDelegate:
                                                 const SliverGridDelegateWithFixedCrossAxisCount(
                                               crossAxisCount: 3,
@@ -264,7 +274,8 @@ class imageExstate extends State<imageEx> {
 
   void addVideos() async {
     final XFile? file = await _picker!.pickVideo(
-        source: ImageSource.gallery, maxDuration: const Duration(seconds: 50));
+        source: ImageSource.gallery, maxDuration: const Duration(seconds: 60));
+    _videoFileList!.add(file!);
     await _playVideo(file);
   }
 
@@ -278,12 +289,8 @@ class imageExstate extends State<imageEx> {
         // controller = VideoPlayerController.file(File(file.path));
       }
       _controller = controller;
-      final double volume = kIsWeb ? 0.0 : 1.0;
-      await controller.setVolume(volume);
-      await controller.initialize();
-      await controller.setLooping(true);
-      await controller.play();
-      setState(() {});
+
+      // startplay(controller);
     }
   }
 
@@ -399,9 +406,20 @@ class imageExstate extends State<imageEx> {
       ),
     );
   }
+
+  void startplay(VideoPlayerController controller) async {
+    final double volume = kIsWeb ? 0.0 : 1.0;
+    await controller.setVolume(volume);
+    await controller.initialize();
+    await controller.setLooping(true);
+    await controller.play();
+    _previewVideo();
+    setState(() {});
+  }
 }
 
 List<XFile>? _imageFileList;
+List<XFile>? _videoFileList;
 Text? _getRetrieveErrorWidget() {
   if (_retrieveDataError != null) {
     final Text result = Text(_retrieveDataError!);
