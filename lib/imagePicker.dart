@@ -4,8 +4,10 @@ import 'dart:html';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_application_1/task6.dart';
 import 'package:http/http.dart';
+import 'package:video_player/video_player.dart';
 import 'package:image_picker/image_picker.dart';
 
 class imageEx extends StatefulWidget {
@@ -26,7 +28,9 @@ class imageExstate extends State<imageEx> {
 
   XFile? _imageFile;
   XFile? _backImage;
-
+  VideoPlayerController? _controller;
+  VideoPlayerController? _toBeDisposed;
+  String? _retrieveDataError;
   bool isitback = false;
 
   @override
@@ -40,7 +44,7 @@ class imageExstate extends State<imageEx> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('Profiles')),
-      body: Container(
+      body: SingleChildScrollView(
         child: Column(
           children: [
             Container(
@@ -121,7 +125,87 @@ class imageExstate extends State<imageEx> {
                                   padding: EdgeInsets.all(12.0),
                                   child: Container(
                                     margin: EdgeInsets.all(10),
-                                    child: Text('name : ' + user.name),
+                                    child: Text(
+                                      'Images',
+                                      style:
+                                          Theme.of(context).textTheme.bodyLarge,
+                                    ),
+                                  ),
+                                ),
+                                Center(
+                                  child: Container(
+                                    margin: EdgeInsets.all(8),
+                                    child: _imageFile != null
+                                        ? GridView.builder(
+                                            // scrollDirection: Axis.horizontal,
+                                            shrinkWrap: true,
+                                            itemCount: 12,
+                                            itemBuilder: (context, index) {
+                                              return Container(
+                                                child: Image.network(
+                                                    _imageFile!.path),
+                                              );
+                                            },
+
+                                            gridDelegate:
+                                                const SliverGridDelegateWithFixedCrossAxisCount(
+                                              crossAxisCount: 3,
+                                              mainAxisSpacing: 15.0,
+                                              crossAxisSpacing: 15.0,
+                                            ),
+                                          )
+                                        : const Center(
+                                            child: Text('no media added yet !'),
+                                          ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        Container(
+                          child: Card(
+                            elevation: 2,
+                            margin: EdgeInsets.all(8.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Padding(
+                                  padding: EdgeInsets.all(12.0),
+                                  child: Container(
+                                    margin: EdgeInsets.all(10),
+                                    child: Text(
+                                      'Videos',
+                                      style:
+                                          Theme.of(context).textTheme.bodyLarge,
+                                    ),
+                                  ),
+                                ),
+                                Center(
+                                  child: Container(
+                                    margin: EdgeInsets.all(8),
+                                    child: _imageFile != null
+                                        ? GridView.builder(
+                                            // scrollDirection: Axis.horizontal,
+                                            shrinkWrap: true,
+                                            itemCount: 12,
+                                            itemBuilder: (context, index) {
+                                              return Container(
+                                                child: Image.network(
+                                                    _imageFile!.path),
+                                              );
+                                            },
+
+                                            gridDelegate:
+                                                const SliverGridDelegateWithFixedCrossAxisCount(
+                                              crossAxisCount: 3,
+                                              mainAxisSpacing: 15.0,
+                                              crossAxisSpacing: 15.0,
+                                            ),
+                                          )
+                                        : const Center(
+                                            child: Text('no media added yet !'),
+                                          ),
                                   ),
                                 ),
                               ],
@@ -147,6 +231,66 @@ class imageExstate extends State<imageEx> {
         },
         child: Icon(Icons.image),
       ),
+    );
+  }
+
+  void addVideos() async {
+    final XFile? file = await _picker!.pickVideo(
+        source: ImageSource.gallery, maxDuration: const Duration(seconds: 10));
+    await _playVideo(file);
+  }
+
+  Future<void> _playVideo(XFile? file) async {
+    if (file != null && mounted) {
+      await _disposeVideoController();
+      late VideoPlayerController controller;
+      if (kIsWeb) {
+        controller = VideoPlayerController.network(file.path);
+      } else {
+        controller = VideoPlayerController.file(File(file.path));
+      }
+      _controller = controller;
+
+      final double volume = kIsWeb ? 0.0 : 1.0;
+      await controller.setVolume(volume);
+      await controller.initialize();
+      await controller.setLooping(true);
+      await controller.play();
+      setState(() {});
+    }
+  }
+
+  Future<void> _disposeVideoController() async {
+    if (_toBeDisposed != null) {
+      await _toBeDisposed!.dispose();
+    }
+    _toBeDisposed = _controller;
+    _controller = null;
+  }
+
+  Text? _getRetrieveErrorWidget() {
+    if (_retrieveDataError != null) {
+      final Text result = Text(_retrieveDataError!);
+      _retrieveDataError = null;
+      return result;
+    }
+    return null;
+  }
+
+  Widget _previewVideo() {
+    final Text? retrieveError = _getRetrieveErrorWidget();
+    if (retrieveError != null) {
+      return retrieveError;
+    }
+    if (_controller == null) {
+      return const Text(
+        'You have not yet picked a video',
+        textAlign: TextAlign.center,
+      );
+    }
+    return Padding(
+      padding: const EdgeInsets.all(10.0),
+      child: AspectRatioVideo(_controller),
     );
   }
 
