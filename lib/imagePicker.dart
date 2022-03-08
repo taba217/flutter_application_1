@@ -1,9 +1,9 @@
 import 'dart:convert';
-import 'dart:html';
+
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_application_1/task6.dart';
 import 'package:http/http.dart';
 import 'package:video_player/video_player.dart';
@@ -198,7 +198,7 @@ class imageExstate extends State<imageEx> {
                                       ),
                                       TextButton(
                                         onPressed: () {
-                                          addVideos();
+                                          _showDialog(true);
                                         },
                                         child: Text('add'),
                                       )
@@ -265,7 +265,7 @@ class imageExstate extends State<imageEx> {
       final pickedFileList = await _picker!.pickMultiImage();
       setState(() {
         _imageFileList = pickedFileList;
-        print(_imageFileList!.length);
+        // print(_imageFileList!.length);
       });
     } catch (e) {
       print(_pickImageError);
@@ -274,8 +274,9 @@ class imageExstate extends State<imageEx> {
 
   void addVideos() async {
     final XFile? file = await _picker!.pickVideo(
-        source: ImageSource.gallery, maxDuration: const Duration(seconds: 60));
+        source: ImageSource.gallery, maxDuration: const Duration(seconds: 600));
     _videoFileList!.add(file!);
+    print(file.path);
     await _playVideo(file);
   }
 
@@ -286,7 +287,7 @@ class imageExstate extends State<imageEx> {
       if (kIsWeb) {
         controller = VideoPlayerController.network(file.path);
       } else {
-        // controller = VideoPlayerController.file(File(file.path));
+        controller = VideoPlayerController.file(File(file.path));
       }
       _controller = controller;
 
@@ -313,6 +314,7 @@ class imageExstate extends State<imageEx> {
         textAlign: TextAlign.center,
       );
     }
+    // startplay(_controller!);
     return Padding(
       padding: const EdgeInsets.all(10.0),
       child: AspectRatioVideo(_controller),
@@ -320,6 +322,7 @@ class imageExstate extends State<imageEx> {
   }
 
   void _showDialog(bool type) {
+    addVideos();
     showDialog(
         context: context,
         routeSettings: RouteSettings(),
