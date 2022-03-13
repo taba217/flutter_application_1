@@ -3,6 +3,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter_application_1/task4%20todo.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:html/parser.dart';
 import 'package:http/http.dart';
 import 'package:flutter/material.dart';
@@ -22,6 +23,8 @@ class Bidsstate extends State<Bids> {
   Future<Bid>? _futureBid;
 
   String? _temp;
+
+ late get flutterLocalNotificationsPlugin => null;
 
   @override
   void initState() {
@@ -61,24 +64,24 @@ class Bidsstate extends State<Bids> {
       ),
     );
   }
-    Future _showNotification() async {
+  Future _showNotification() async {
     var androidPlatformChannelSpecifics = AndroidNotificationDetails(
     '12345', '1', 'Notification name',
-    importance: Importance.defaultImportance,
-    priority: Priority.defaultPriority);
+        importance: Importance.defaultImportance,
+        priority: Priority.defaultPriority);
     var iOSPlatformChannelSpecifics = IOSNotificationDetails();
     var platformChannelSpecifics = NotificationDetails(
-    android: androidPlatformChannelSpecifics,
-    iOS: iOSPlatformChannelSpecifics);
+        android: androidPlatformChannelSpecifics,
+        iOS: iOSPlatformChannelSpecifics);
     await flutterLocalNotificationsPlugin.show(
       0,
-     'عطاء جديد 🔔',
-     'تم رصد عطاء جديد للخدمات الإستشارية',
+      'عطاء جديد 🔔',
+      'تم رصد عطاء جديد للخدمات الإستشارية',
       platformChannelSpecifics,
       payload:
       'تم رصد عطاء جديد للخدمات الإستشارية',
-     );
-    }
+    );
+  }
    }
 
   // void onSelected(var destination) {
@@ -148,7 +151,6 @@ class Service implements Api {
       throw Exception('error');
     }
   }
-
   String _parseHtmlString(String htmlString) {
     var document = parse(htmlString);
     if (document.body == null) {
@@ -167,19 +169,6 @@ class Service implements Api {
       return parsedString;
     }
   }
-
-  // @override
-  // Future<List<Bid>> getBids() async {
-  //   Response response = await get(
-  //       Uri.parse('http://www.sudabids.com/Bid/individual0301-consultants'));
-  //   if (response.statusCode == 200) {
-  //     String body = response.body;
-  //     Iterable jsonMap = jsonDecode(body);
-  //     //  return ;//List<Bid>.from(jsonMap.map((e) => Bid.fromJson(e)));
-  //   } else {
-  //     throw ("Error retrieving Bids");
-  //   }
-  // }
 
   @override
   Future<String> login() async {

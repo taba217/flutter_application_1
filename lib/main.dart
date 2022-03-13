@@ -1,12 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/imagePicker.dart';
 import 'package:flutter_application_1/notification.dart';
-import 'package:flutter_application_1/task3.dart';
-import 'package:flutter_application_1/task4%20todo.dart';
-import 'package:flutter_application_1/task5.dart';
-import 'package:flutter_application_1/task6%20form.dart';
-import 'package:flutter_application_1/task6.dart';
-import 'package:image_picker/image_picker.dart';
 
 void main() {
   runApp(const MyApp());
